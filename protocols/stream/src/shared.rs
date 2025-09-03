@@ -29,7 +29,7 @@ pub(crate) struct Shared {
     ///
     /// We manage this through a channel to avoid locks as part of
     /// [`NetworkBehaviour::poll`](libp2p_swarm::NetworkBehaviour::poll).
-    dial_sender: mpsc::Sender<PeerId>,
+    dial_sender: mpsc::UnboundedSender<PeerId>,
 }
 
 impl Shared {
@@ -39,7 +39,7 @@ impl Shared {
 }
 
 impl Shared {
-    pub(crate) fn new(dial_sender: mpsc::Sender<PeerId>) -> Self {
+    pub(crate) fn new(dial_sender: mpsc::UnboundedSender<PeerId>) -> Self {
         Self {
             dial_sender,
             connections: Default::default(),
@@ -144,7 +144,7 @@ impl Shared {
                     .entry(peer)
                     .or_insert_with(|| mpsc::channel(0));
 
-                let _ = self.dial_sender.try_send(peer);
+                let _ = self.dial_sender.unbounded_send(peer);
 
                 sender.clone()
             }
